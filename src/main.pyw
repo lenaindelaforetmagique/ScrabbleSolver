@@ -1,5 +1,8 @@
-from tkApplication import *
+#!/usr/local/bin/python3
+# -*- coding: utf-8 -*-
 
+from tkApplication import *
+import os
 
 fenetre = Application()
 fenetre.mainloop()
@@ -9,9 +12,6 @@ fenetre.mainloop()
 # piocher des lettres à la souris ?
 # jouer un mot à la souris
 
-# prevoir multilingue
-# prévisualiser un mot
-
-# revoir un mot joué (clic tours joués)
-
 # titre avec nom du fichier
+
+# écraser le nom du fichier quand "fichier nouveau"

@@ -1,3 +1,6 @@
+#!/usr/local/bin/python3
+# -*- coding: utf-8 -*-
+
 """
 ScrabbleGame class
 developed by X.Morin
@@ -29,9 +32,9 @@ Structure of the class & vocabulary:
 
 * position:
 	*
-    
+
 =================== TO DO ============
-* send to init all needed informations (dictionnary,  
+* send to init all needed informations (dictionnary,
 """
 import os
 import os.path
@@ -51,11 +54,11 @@ class ScrabbleGame:
         self.testedWords = []           # all testedWords during backtracking
         self.anchorsList.add((7,7))     # at start : center only
         self.nbLetters = nbLetters
-        
+
         self._SetGrid()
         self._SetLetters(lettersFile)
         self._SetDictionary(dictionaryFile)
-    
+
     def _SetGrid(self):
         """Sets the triple/double word/letter multipliers in the grid"""
         listTW = "A1,A8,A15,H1,H15,O1,O8,O15".split(',')
@@ -74,7 +77,7 @@ class ScrabbleGame:
         for pos in listDL:
             i, j = _coord(pos)[:2]
             self.grid[i][j].lM = 2
-    
+
     def _SetLetters(self, fileName):
         """Sets the letters in the remainder"""
         Lines = _readLines(fileName)
@@ -82,14 +85,14 @@ class ScrabbleGame:
             t = line.split(' ')
             for _ in range(int(t[2])):
                 self.remainder.append(self.Letter(t[0], int(t[1])))
-        
+
     def _SetDictionary(self, fileName):
         """Sets the dictionary with file contents."""
         Lines = _readLines(fileName)
         self.dictionnary = set(Lines)
         for l in Lines:
             self.dictionary.add(l)
-        
+
         datFile = fileName.replace(".dic",".dat")
         if os.path.isfile(datFile):
             Lines = _readLines(datFile)
@@ -110,7 +113,7 @@ class ScrabbleGame:
                 file.write(line + '\n')
             file.close()
 
-               
+
     def PickLetters(self, letters):
         """Picks letters from remainder to rack.
         Returns tuple (True, pickedLetters) on success
@@ -126,22 +129,22 @@ class ScrabbleGame:
             s = "{0} is too big, rack is limited to {1} letters.".format(letters, self.nbLetters)
             #print(s)
             return (False, s)
-        
+
         tempRack = []
         test = True
         if len(letters) == 0:
             # Random picking
             while len(self.rack)+len(tempRack)<self.nbLetters and len(self.remainder)>0:
                 i = random.randrange(len(self.remainder))
-                pickedLetters += self.remainder[i].face               
+                pickedLetters += self.remainder[i].face
                 tempRack.append(self.remainder.pop(i))
         else:
             # Normal picking
-            for l in letters:           
+            for l in letters:
                 i = 0
                 while i<len(self.remainder) and l != self.remainder[i].face:
                     i += 1
-                
+
                 if i == len(self.remainder):
                     s = "'{0}' n'existe pas dans le reliquat !".format(l)
                     test = False
@@ -149,7 +152,7 @@ class ScrabbleGame:
                 else:
                     pickedLetters += self.remainder[i].face
                     tempRack.append(self.remainder.pop(i))
-            
+
         if test:
             # on success:
             for letter in tempRack:
@@ -160,14 +163,14 @@ class ScrabbleGame:
             for letter in tempRack:
                 self.remainder.append(letter)
             return (False, s)
-    
+
     def _RejectRack(self):
         """Rejects all letters in rack to remainder."""
         for letter in self.rack:
             self.remainder.append(letter)
-        
+
         self.rack = []
-              
+
     def PlaceWord(self, word, position):
         """Complete action for placing a word on the grid.
         - Tests if this turn is valid
@@ -193,11 +196,11 @@ class ScrabbleGame:
                     c = l
                 else:
                     c = '?'
-                
+
                 k = 0
                 while k<len(self.rack) and c != self.rack[k].face:
                     k += 1
-                
+
                 self.grid[i][j].letter = self.rack.pop(k)
                 self.grid[i][j].letter.face = l.upper()
                 self.grid[i][j].lM = 1
@@ -208,17 +211,17 @@ class ScrabbleGame:
                 for i2, j2 in tempAnchors:
                     if 0<=i2<15 and 0<=j2<15 and self.grid[i2][j2].letter is None and (i2,j2) not in playedTiles.keys():
                         self.anchorsList.add((i2,j2))
-            
+
             # updates anchors possibleLetters
             for anchor in self.anchorsList:
                 self.calculatePossibleLetters(anchor)
-            
-        
+
+
             self.totalScore += score
             #print(position, word, score, self.totalScore)
-    
-        return (score, s)    
-                 
+
+        return (score, s)
+
     def TestWord(self, word, position):
         """Tests if word at position is acceptable.
         - rack-ly
@@ -226,16 +229,16 @@ class ScrabbleGame:
         - dictionarily.
         Returns a tuple containing (score, playedTiles, playedWords).
         score < 0 if illegal"""
-        
+
         if len(word)<2:
             return (-1, None, None)
-                
+
         # playedTiles + rack check + position check
         playedTiles = self._playedTiles(word, position)
         if len(playedTiles) == 0:
             # rack or position not acceptable
             return (-1, None, None)
-        
+
         #print(playedTiles)
 
         anchorFound = False
@@ -243,27 +246,27 @@ class ScrabbleGame:
             if position in self.anchorsList:
                 anchorFound = True
                 break
-        
+
         if not anchorFound:
             #print("{0} is not anchored to the grid.".format(word))
             return (-1, playedTiles, None)
- 
+
         # dictionary check
         playedWords = self._playedWords(playedTiles)
         #print(playedWords)
         for w in playedWords.values():
             if w not in self.dictionary:
-                #print("{0} does not exist in dictionary.".format(w))  
-                return (-1, playedTiles, playedWords) 
-        
+                #print("{0} does not exist in dictionary.".format(w))
+                return (-1, playedTiles, playedWords)
+
         # Score calculation
         score = 0
         for tilesRange in playedWords.keys():
             score += self._countTilesRange(playedTiles, tilesRange)
-        
+
         if len(playedTiles) == self.nbLetters:   # bonus for Scrabble
             score += 50
-        
+
         return (score, playedTiles, playedWords)
 
     def FindBestWord(self):
@@ -277,7 +280,7 @@ class ScrabbleGame:
             if len(self.history)>0:
                 self._leftBacktracking(anchor, 1, "", rack, False)
         self.testedWords = sorted(self.testedWords, key=lambda x: -x[2])
-        
+
         if len(self.testedWords)>0:
             top = self.testedWords[0][2]
             nbMin = min(100, len(self.testedWords))
@@ -290,7 +293,7 @@ class ScrabbleGame:
             #print("No word is possible.")
             pass
         return t
-                                
+
     def _leftBacktracking(self, position, direction, word, rack, anchored):
         """Left backtracking to find best word."""
         #print("L : {0} : {1} : {2} : {3} : {4}".format(position, direction, word, rack, anchored))
@@ -304,7 +307,7 @@ class ScrabbleGame:
         # Right backtracking
         if anchored and (i<0 or j<0 or self.grid[i][j].letter is None):
             self._rightBacktracking((i+di,j+dj), direction, word, rack)
-        
+
         # Left backtracking
         wLength = len(word)
         position2 = (i-di, j-dj)
@@ -327,7 +330,7 @@ class ScrabbleGame:
         #else:
             # empty square not in anchorsList
             # normal behavior
-            
+
         for c in self._developRack(rack, letters):
             word2 = c + word
             if word2.upper() in self.kuplets[wLength]:
@@ -336,11 +339,11 @@ class ScrabbleGame:
                     rack2 = rack.replace('?', '', 1)
                 else:
                     rack2 = rack.replace(c, '', 1)
-                
+
                 self._leftBacktracking(position2, direction, word2, rack2, anchored)
-        
+
         return
-    
+
     def _rightBacktracking(self, position, direction, word, rack):
         """Right backtracking"""
         #print(" R : {0} : {1} : {2} : {3}".format(position, direction, word, rack))
@@ -350,18 +353,18 @@ class ScrabbleGame:
             di, dj = 0, 1
         else:
             di, dj = 1, 0
-            
+
         wLength = len(word)
         i, j = i+di*wLength, j+dj*wLength
-        
+
         position2 = _coordInvert(position, direction)
-        
+
         # Test word
         if 15<=i or 15<=j or self.grid[i][j].letter is None:
             test = self.TestWord(word, position2)
             if test[0]>0:
-                self.testedWords.append([word, position2, test[0]])            
-        
+                self.testedWords.append([word, position2, test[0]])
+
         # Right backtracking
         wLength = len(word)
         if 15<=i or 15<=j:
@@ -379,7 +382,7 @@ class ScrabbleGame:
         #else:
             # empty square not in anchorsList
             # normal behavior
-        
+
         for c in self._developRack(rack, letters):
             word2 = word + c
             if word2.upper() in self.kuplets[wLength]:
@@ -387,32 +390,32 @@ class ScrabbleGame:
                     rack2 = rack.replace('?', '', 1)
                 else:
                     rack2 = rack.replace(c, '', 1)
-                
+
                 self._rightBacktracking(position, direction, word2, rack2)
-        
+
         return
-           
+
     def _playedTiles(self, word, position):
         """"Returns the dictionary of {(i,j):letter} being played."""
         playedTiles = {}
         copyRack = self.rack[:]
-        
+
         iS, jS, direction = _coord(position)
         if direction == 0:
             di, dj = 0, 1
         else:
             di, dj = 1, 0
-        
+
         nbLetters = len(word)
         iE = iS + (nbLetters-1)*di
         jE = jS + (nbLetters-1)*dj
-        
+
         # free squares enclosing word ?
         if (0<=iS-di<15 and 0<=jS-dj<15) and (self.grid[iS-di][jS-dj].letter is not None):
             return {}
         elif (0<=iE+di<15 and 0<=jE+dj<15) and (self.grid[iE+di][jE+dj].letter is not None):
             return {}
-        
+
         # out of grid error !
         if not (0<=iS<15 and 0<=jS<15 and 0<=iE<15 and 0<=jE<15):
             return {}
@@ -425,28 +428,28 @@ class ScrabbleGame:
                     c = l
                 else:
                     c = '?'
-                
+
                 k = 0
                 while k<len(copyRack) and c != copyRack[k].face:
                     k += 1
-            
+
                 if k == len(copyRack):
                     #print("'{0}' does not exist in rack !".format(l))
                     return {}
                 else:
                     copyRack.pop(k)
                     playedTiles[(i,j)] = l
-                
+
             elif l != self.grid[i][j].letter.face:
                 # busy square
                 #print("{0} at position {1} is in conflict with the grid.".format(word, position))
                 return {}
-            
+
             i += di
             j += dj
-        
+
         return playedTiles
-         
+
     def _playedWords(self, playedTiles):
         """Returns the list of the words being played."""
         playedWords = {}
@@ -468,7 +471,7 @@ class ScrabbleGame:
                     jE += dj
                 iE -= di
                 jE -= dj
-                
+
                 wordLength = max(iE-iS, jE-jS) + 1
                 wordKey = (iS,jS,iE,jE)
                 if wordLength > 1 and wordKey not in playedWords.keys():
@@ -482,7 +485,7 @@ class ScrabbleGame:
                             word += self.grid[iL][jL].letter.face
                     playedWords[wordKey] = word.upper()
         return playedWords
-                              
+
     def _countTilesRange(self, playedTiles, tilesRange):
         """Counts the score of the tilesRange being played.
         Does not check anything."""
@@ -492,7 +495,7 @@ class ScrabbleGame:
             di, dj = 0, 1
         else:
             di, dj = 1, 0
-        
+
         i, j = iS, jS
         wordMultiplier = 1
         score = 0
@@ -508,7 +511,7 @@ class ScrabbleGame:
                     letterScore = 0
                 else:
                     letterScore = self.rack[k].value
-                
+
                 wordMultiplier *= self.grid[i][j].wM
                 letterScore *= self.grid[i][j].lM
                 #print(l, self.grid[i][j].wM, self.grid[i][j].lM)
@@ -517,7 +520,7 @@ class ScrabbleGame:
             j += dj
         score *= wordMultiplier
         return score
-    
+
     def _developRack(self, rack, allowedLetters = "*"):
         """Develop rack considering allowedLetters.
         (str)rack may contain ?A..Z
@@ -526,7 +529,7 @@ class ScrabbleGame:
         result = set()
         if allowedLetters == "*":
             allowedLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        
+
         for l in rack:
             if l == '?':
                 for c in allowedLetters.lower():
@@ -535,13 +538,13 @@ class ScrabbleGame:
                 if l in allowedLetters:
                     result.add(l)
         return result
-                
+
     def _rack(self):
         return ''.join(sorted([letter.face for letter in self.rack]))
 
     def _remainder(self):
         return ''.join(sorted([letter.face for letter in self.remainder]))
-    
+
     def __repr__(self):
         s = "     1  2  3  4  5  6  7  8  9  10 11 12 13 14 15\n"
         s += "    ---------------------------------------------\n"
@@ -557,16 +560,16 @@ class ScrabbleGame:
         s += "\n[{0:^9}]\n".format(self._rack())
         s += "="*11
         s += "\n({0})".format(self._remainder())
-        
-        return s 
-    
+
+        return s
+
     def calculatePossibleLetters(self, position):
         """Calculates possible letters for a position.
         * Looks for neighboring squares
         * Try all possible kuplets
         * retains compatible letters."""
         i, j = position
-        
+
         directions = [(0,1),(1,0)]
         list1 = self.grid[i][j].possibleLetters
         if list1 == "*":
@@ -578,23 +581,23 @@ class ScrabbleGame:
             while 0<=i-k*dij[0] and 0<=j-k*dij[1] and self.grid[i-k*dij[0]][j-k*dij[1]].letter is not None:
                 sL = self.grid[i-k*dij[0]][j-k*dij[1]].letter.face + sL
                 k += 1
-            
+
             sR = ""
             k = 1
             while i+k*dij[0]<15 and j+k*dij[1]<15 and self.grid[i+k*dij[0]][j+k*dij[1]].letter is not None:
                 sR = sR + self.grid[i+k*dij[0]][j+k*dij[1]].letter.face
                 k += 1
-            
+
             list2 = ""
             wLength = len(sL+sR)
-            
+
             for c in list1:
                 if sL+c+sR in self.kuplets[wLength]:
                     list2 += c
             list1 = list2
 
         self.grid[i][j].possibleLetters = list1
-    
+
     class Square:
         """class representing a place on the grid"""
         def __init__(self):
@@ -602,21 +605,21 @@ class ScrabbleGame:
             self.lM = 1                 # letter multiplier (1,2,3)
             self.wM = 1                 # word multiplier (1,2,3)
             self.possibleLetters = "*"  # playable letters (*=all letters)
-                
-    
+
+
     class Letter:
         """class representing a letter with its value"""
         def __init__(self, face, value):
             """face = letter in "A..Z?"
             value = integer"""
-            self.face = face             
+            self.face = face
             self.value = value
         def __str__(self):
             return "({0},{1})".format(self.face, self.value)
         def __repr__(self):
             return "({0},{1})".format(self.face, self.value)
-        
- 
+
+
 def _coord(position):
     """Returns position (i,j) and direction (0:Horizontal, 1:Vertical)"""
     lines = "ABCDEFGHIJKLMNO"
@@ -630,7 +633,7 @@ def _coord(position):
         X = ord(position[-1])-65
         Y = eval(position[0:-1])-1
         direction = 1
-    return (X,Y, direction)      
+    return (X,Y, direction)
 
 def _coordInvert(position, direction):
     """Returns position An or nA"""

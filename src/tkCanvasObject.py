@@ -1,3 +1,6 @@
+#!/usr/local/bin/python3
+# -*- coding: utf-8 -*-
+
 import tkinter as tk
 
 
@@ -9,18 +12,18 @@ class CanvasObject:
         self.movable = True
         self.tkItems = []
         self.active = False
-    
-#     
+
+#
 #     def activate(self): #/, x = x, y = self.y):
 #         self.x = x
 #         self.y = y
 #         self.active
 #     def deactivate(self):
-#         self 
-    
+#         self
+
     def draw(self):
         pass
-    
+
     def refresh(self):
         for item in self.tkItems:
             self.parent.delete(item)
@@ -32,9 +35,9 @@ class CanvasObject:
     def move(self, xAmount, yAmount):
         for item in self.tkItems:
             item.move(xAmount, yAmount)
-    
+
     def mouseOver(self, event):
         pass
-    
+
     def highlight(self):
         pass
