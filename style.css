@@ -1,0 +1,114 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Overlock', monospace;
+  background-color: #ADD8E6;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+svg {
+  width: 100%;
+  height: 100%;
+}
+
+svg rect.Square {
+  stroke-width: 1px;
+  stroke: black;
+  fill: green;
+}
+
+svg rect.Square_TW {
+  stroke-width: 1px;
+  stroke: black;
+  fill: red;
+}
+
+svg rect.Square_DW {
+  stroke-width: 1px;
+  stroke: black;
+  fill: orange;
+}
+
+svg rect.Square_TL {
+  stroke-width: 1px;
+  stroke: black;
+  fill: blue;
+}
+
+svg rect.Square_DL {
+  stroke-width: 1px;
+  stroke: black;
+  fill: lightblue;
+}
+
+#container {
+  /* margin: 0; */
+  /* padding: 0; */
+  height: 100%;
+}
+
+header {
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 0px;
+  left: 5px;
+  font-size: 80%;
+}
+
+footer {
+  position: absolute;
+  top: 95%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  font-size: 80%;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:link {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+a:visited {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+a:hover {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+a:active {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+ellipse.Point {
+  fill: none;
+  stroke: red;
+}
+
+ellipse.Node {
+  fill: red;
+}
+
+polygon {
+  stroke: blue;
+}
+
+polygon.base {
+  fill: none;
+  /* fill: rgba(0, 0, 0, 0.1); */
+  stroke-width: 0.1px;
+  /* stroke: red; */
+}
+
+polygon.triangle {
+  /* fill: none; */
+  /* stroke: blue; */
+  stroke-width: 0.1px;
+}
