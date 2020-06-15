@@ -5,7 +5,8 @@ html, body {
   overflow: hidden;
   font-family: 'Overlock', monospace;
   background-color: #ADD8E6;
-  color: rgba(0, 0, 0, 0.7);
+  color: #342D27;
+  /* rgba(0, 0, 0, 0.7); */
 }
 
 svg {
@@ -13,34 +14,48 @@ svg {
   height: 100%;
 }
 
+svg rect {
+  stroke-width: 1.5px;
+  stroke: #F0F0F0;
+}
+
 svg rect.Square {
-  stroke-width: 1px;
-  stroke: black;
-  fill: green;
+  fill: #CCCBB3;
 }
 
 svg rect.Square_TW {
-  stroke-width: 1px;
-  stroke: black;
-  fill: red;
+  fill: #E40234;
+  /* red; */
 }
 
 svg rect.Square_DW {
-  stroke-width: 1px;
-  stroke: black;
-  fill: orange;
+  fill: #F0878C;
+  /* pink; */
 }
 
 svg rect.Square_TL {
-  stroke-width: 1px;
-  stroke: black;
-  fill: blue;
+  fill: #4FA1B9;
+  /* blue; */
 }
 
 svg rect.Square_DL {
-  stroke-width: 1px;
-  stroke: black;
-  fill: lightblue;
+  fill: #C2DDE8;
+  /* lightblue; */
+}
+
+svg g.letter rect {
+  fill: ivory;
+  stroke: red;
+  rx: 5px;
+  /* border: 3px; */
+}
+
+svg g.letter text.face {
+  font-size: 25px;
+}
+
+svg g.letter text.value {
+  font-size: 10px;
 }
 
 #container {

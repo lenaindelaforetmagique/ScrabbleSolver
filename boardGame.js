@@ -72,6 +72,50 @@ class TextBox {
   }
 }
 
+
+class Letter {
+  constructor(face_, value_) {
+    this.face = face_;
+    this.value = value_;
+    this.dom = document.createElementNS(SVGNS, 'g');
+
+    this.xPos = 0;
+    this.yPos = 0;
+    this.init();
+  }
+
+  init() {
+    let rect = document.createElementNS(SVGNS, 'rect');
+    rect.setAttribute("width", 30);
+    rect.setAttribute("height", 30);
+
+    let text = document.createElementNS(SVGNS, 'text');
+    text.innerHTML = this.face;
+    text.setAttribute("x", 4);
+    text.setAttribute("y", 25);
+    text.setAttribute("class", "face");
+
+    let value = document.createElementNS(SVGNS, 'text');
+    value.innerHTML = this.value;
+    value.setAttribute("x", 20);
+    value.setAttribute("y", 25);
+    value.setAttribute("class", "value");
+
+    this.dom.appendChild(rect);
+    this.dom.appendChild(text);
+    this.dom.appendChild(value);
+
+    this.dom.setAttribute("class", "letter");
+  }
+
+  update(newX, newY) {
+    this.posX = newX;
+    this.posY = newY;
+    this.dom.setAttribute("transform", "translate(" + this.posX + "," + this.posY + ") rotate(0)");
+  }
+}
+
+
 class Square {
   constructor(parent_, i_, j_) {
     this.parent = parent_;
@@ -101,23 +145,22 @@ class Square {
       // Double Letter
       squareClass = "Square_DL";
     }
+    this.dom.setAttribute("width", this.parent.squareWidth);
+    this.dom.setAttribute("height", this.parent.squareWidth);
     this.dom.setAttribute("class", squareClass);
-
   }
 
   update() {
     this.dom.setAttribute("x", this.parent.xGrid + this.j * this.parent.squareWidth);
     this.dom.setAttribute("y", this.parent.yGrid + this.i * this.parent.squareWidth);
-    this.dom.setAttribute("width", this.parent.squareWidth);
-    this.dom.setAttribute("height", this.parent.squareWidth);
+  }
 
+  placeLetter(letter_) {
+    this.letter = letter_;
+    this.letter.update(this.parent.xGrid + this.j * this.parent.squareWidth, this.parent.yGrid + this.i * this.parent.squareWidth);
   }
 
 }
-
-
-
-
 
 class BoardGame {
   constructor(parent_) {
@@ -150,7 +193,14 @@ class BoardGame {
       this.grid.push(newLine);
     }
 
+    this.playLetter(new Letter("Z", 10), 13, 4);
     console.log(this.grid);
+  }
+
+
+  playLetter(letter, i, j) {
+    this.grid[i][j].placeLetter(letter);
+    this.dom.appendChild(letter.dom);
   }
 
 
