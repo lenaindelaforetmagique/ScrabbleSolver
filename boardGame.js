@@ -1,3 +1,13 @@
+class TextFile {
+  constructor(filename_, onload_ = null) {
+    this.filename = filename_;
+    this.lines = [];
+
+
+  }
+}
+
+
 class TextBox {
   constructor(parent_) {
     this.dom = document.getElementById("textBox");
@@ -86,24 +96,25 @@ class Letter {
 
   init() {
     let rect = document.createElementNS(SVGNS, 'rect');
-    rect.setAttribute("width", 30);
-    rect.setAttribute("height", 30);
+    rect.setAttribute("width", 28);
+    rect.setAttribute("height", 28);
+    this.dom.appendChild(rect);
 
     let text = document.createElementNS(SVGNS, 'text');
     text.innerHTML = this.face;
-    text.setAttribute("x", 4);
-    text.setAttribute("y", 25);
+    text.setAttribute("x", 12);
+    text.setAttribute("y", 19);
     text.setAttribute("class", "face");
-
-    let value = document.createElementNS(SVGNS, 'text');
-    value.innerHTML = this.value;
-    value.setAttribute("x", 20);
-    value.setAttribute("y", 25);
-    value.setAttribute("class", "value");
-
-    this.dom.appendChild(rect);
     this.dom.appendChild(text);
-    this.dom.appendChild(value);
+
+    if (this.value > 0) {
+      let value = document.createElementNS(SVGNS, 'text');
+      value.innerHTML = this.value;
+      value.setAttribute("x", 25);
+      value.setAttribute("y", 25);
+      value.setAttribute("class", "value");
+      this.dom.appendChild(value);
+    }
 
     this.dom.setAttribute("class", "letter");
   }
@@ -111,53 +122,43 @@ class Letter {
   update(newX, newY) {
     this.posX = newX;
     this.posY = newY;
-    this.dom.setAttribute("transform", "translate(" + this.posX + "," + this.posY + ") rotate(0)");
+    this.dom.setAttribute("transform", "translate(" + (this.posX + 1) + "," + (this.posY + 1) + ") rotate(0)");
   }
 }
 
 
 class Square {
-  constructor(parent_, i_, j_) {
+  constructor(parent_, squareClass, letterMultiplier_, wordMultiplier_, posX_, posY_) {
     this.parent = parent_;
     this.dom = document.createElementNS(SVGNS, 'rect');
     this.letter = null;
-    this.i = i_; // line
-    this.j = j_; // column
-    this.letterMultiplier = 1;
-    this.wordMultiplier = 1;
-    this.init();
+    this.posX = posX_;
+    this.posY = posY_;
+    // this.i = i_; // line
+    // this.j = j_; // column
+    this.letterMultiplier = letterMultiplier_;
+    this.wordMultiplier = wordMultiplier_;
+    this.init(squareClass);
   }
 
-  init() {
-    let myName = "ABCDEFGHIJKLMNO".charAt(this.i) + (this.j + 1) + ",";
-    // console.log(myName);
-    let squareClass = "Square";
-    if ("A1,A8,A15,H1,H15,O1,O8,O15,".includes(myName)) {
-      // Triple word
-      squareClass = "Square_TW";
-    } else if ("B2,B14,C3,C13,D4,D12,E5,E11,H8,N2,N14,M3,M13,L4,L12,K5,K11,".includes(myName)) {
-      // Double word
-      squareClass = "Square_DW";
-    } else if ("B6,B10,F2,F6,F10,F14,J2,J6,J10,J14,N6,N10,".includes(myName)) {
-      // Triple Letter
-      squareClass = "Square_TL";
-    } else if ("A4,A12,C7,C9,D1,D8,D15,G3,G7,G9,G13,H4,H12,I3,I7,I9,I13,L1,L8,L15,M7,M9,O4,O12,".includes(myName)) {
-      // Double Letter
-      squareClass = "Square_DL";
-    }
+  init(squareClass) {
     this.dom.setAttribute("width", this.parent.squareWidth);
     this.dom.setAttribute("height", this.parent.squareWidth);
+    this.dom.setAttribute("x", this.posX);
+    this.dom.setAttribute("y", this.posY);
     this.dom.setAttribute("class", squareClass);
+
   }
 
   update() {
-    this.dom.setAttribute("x", this.parent.xGrid + this.j * this.parent.squareWidth);
-    this.dom.setAttribute("y", this.parent.yGrid + this.i * this.parent.squareWidth);
+    if (this.letter != null) {
+      this.letter.update(this.posX, this.posY);
+    }
   }
 
   placeLetter(letter_) {
     this.letter = letter_;
-    this.letter.update(this.parent.xGrid + this.j * this.parent.squareWidth, this.parent.yGrid + this.i * this.parent.squareWidth);
+    // this.letter.update(this.parent.xGrid + this.j * this.parent.squareWidth, this.parent.yGrid + this.i * this.parent.squareWidth);
   }
 
 }
@@ -165,8 +166,6 @@ class Square {
 class BoardGame {
   constructor(parent_) {
     this.parent = parent_;
-
-    this.dom = document.createElementNS(SVGNS, 'g');
 
     this.grid = [];
     this.remainder = [];
@@ -176,31 +175,125 @@ class BoardGame {
     this.xGrid = 0;
     this.yGrid = 0;
     this.squareWidth = 30;
+
+    this.xRemainder = this.xGrid + 17 * this.squareWidth;
+    this.yRemainder = this.yGrid;
+    this.remainder_width = 7 * this.squareWidth;
+
     this.init();
+
+    this.loadLetters("letters/FR.let");
+
+    // this.playLetter(new Letter("Z", 10), 13, 4);
+    // this.playLetter(new Letter("M", 2), 11, 4);
+    // this.update();
+
   }
 
 
   init() {
+    this.dom = document.createElementNS(SVGNS, 'g');
+    this.gridDom = document.createElementNS(SVGNS, 'g');
+    this.gridDom.setAttribute("name", "grid");
     this.grid = [];
+
+    let bg = document.createElementNS(SVGNS, 'rect');
+    bg.setAttribute("width", 17 * this.squareWidth);
+    bg.setAttribute("height", 17 * this.squareWidth);
+    bg.setAttribute("x", -this.squareWidth);
+    bg.setAttribute("y", -this.squareWidth);
+    bg.setAttribute("class", "boardGame");
+    this.gridDom.appendChild(bg);
+
     for (let i = 0; i < 15; i++) {
       let newLine = [];
       for (let j = 0; j < 15; j++) {
-        let newSquare = new Square(this, i, j);
+        // class
+        let squareName = "ABCDEFGHIJKLMNO".charAt(i) + (j + 1) + ",";
+        let squareClass = "Square";
+        let letterMultiplier = 1;
+        let wordMultiplier = 1;
+        if ("A1,A8,A15,H1,H15,O1,O8,O15,".includes(squareName)) {
+          // Triple word
+          squareClass = "Square_TW";
+          wordMultiplier = 3;
+        } else if ("B2,B14,C3,C13,D4,D12,E5,E11,H8,N2,N14,M3,M13,L4,L12,K5,K11,".includes(squareName)) {
+          // Double word
+          squareClass = "Square_DW";
+          wordMultiplier = 2;
+        } else if ("B6,B10,F2,F6,F10,F14,J2,J6,J10,J14,N6,N10,".includes(squareName)) {
+          // Triple Letter
+          squareClass = "Square_TL";
+          letterMultiplier = 3;
+        } else if ("A4,A12,C7,C9,D1,D8,D15,G3,G7,G9,G13,H4,H12,I3,I7,I9,I13,L1,L8,L15,M7,M9,O4,O12,".includes(squareName)) {
+          // Double Letter
+          squareClass = "Square_DL";
+          letterMultiplier = 2;
+        }
+
+        let newSquare = new Square(this, squareClass, letterMultiplier, wordMultiplier, j * this.squareWidth, i * this.squareWidth);
         newLine.push(newSquare);
-        this.dom.appendChild(newSquare.dom);
-        newSquare.update();
+        this.gridDom.appendChild(newSquare.dom);
       }
       this.grid.push(newLine);
     }
-
-    this.playLetter(new Letter("Z", 10), 13, 4);
-    console.log(this.grid);
+    this.dom.appendChild(this.gridDom);
   }
 
 
-  playLetter(letter, i, j) {
-    this.grid[i][j].placeLetter(letter);
-    this.dom.appendChild(letter.dom);
+  update() {
+
+    this.gridDom.setAttribute("transform", "translate(" + 50 + "," + 12 + ") rotate(0)");
+
+    let posX = this.xRemainder;
+    let posY = this.yRemainder;
+    for (let i = 0; i < this.remainder.length; i++) {
+      this.remainder[i].update(posX, posY);
+      posX += this.squareWidth;
+      if (posX > this.xRemainder + this.remainder_width) {
+        posX = this.xRemainder;
+        posY += this.squareWidth;
+      }
+    }
+  }
+  refresh() {
+
+  }
+
+
+  loadLetters(lettersFile_) {
+    let lettersDom = document.createElementNS(SVGNS, 'g');
+    lettersDom.setAttribute("name", "letters");
+    this.dom.appendChild(lettersDom);
+
+    let thiz = this;
+    let request = new XMLHttpRequest();
+    request.onload = function() {
+      let lines = request.response.split('\n');
+      thiz.remainder = [];
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i] != "") {
+          let keys = lines[i].split(" ");
+          for (let j = 0; j < parseInt(keys[2]); j++) {
+            let newLetter = new Letter(keys[0], parseInt(keys[1]));
+            thiz.remainder.push(newLetter);
+            lettersDom.appendChild(newLetter.dom);
+          }
+        }
+      }
+      thiz.update();
+    };
+
+    request.open("GET", lettersFile_);
+    request.responseType = "txt";
+    request.send();
+
+  }
+
+
+  playLetter(letter_, i, j) {
+    this.grid[i][j].letter = letter_;
+    this.dom.appendChild(letter_.dom);
   }
 
 

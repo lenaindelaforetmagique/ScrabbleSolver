@@ -1,2 +1,0 @@
-# Boggle
-The Game Boggle
